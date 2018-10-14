@@ -32,7 +32,7 @@ cd restic-backup-docker
 
 Build the container. The container is named `backup-test`
 ```
-./build.sh
+docker build --rm -t restic-backup .
 ```
 
 Run the container.
