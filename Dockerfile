@@ -32,6 +32,5 @@ RUN touch /var/log/cron.log
 
 WORKDIR "/"
 
-#ENTRYPOINT ["ls"]
 ENTRYPOINT ["/entry.sh"]
 

@@ -1,27 +1,28 @@
 # Restic Backup Docker Container
-A docker container to automate [restic backups](https://restic.github.io/)
+A docker container to automate [restic backups](https://restic.net/)
 
 This container runs restic backups in regular intervals. 
 
 * Easy setup and maintanance
-* Support for different targets (currently: Local, NFS, SFTP)
+* Support for different targets (currently: Local,)
 * Support `restic mount` inside the container to browse the backup files
 
-**Container**: [lobaro/restic-backup-docker](https://hub.docker.com/r/lobaro/restic-backup-docker/)
+**Container**: [hortio/restic](https://hub.docker.com/r/hortio/restic/)
 
-Stable
+Latest
 ```
-docker pull lobaro/restic-backup-docker:v1.0
-```
-
-Latest (experimental)
-```
-docker pull lobaro/restic-backup-docker
+docker pull hortio/restic:latest
 ```
 
-Please don't hesitate to report any issue you find. **Thanks.**
+## Usage with docker-compose (recommended)
 
-# Test the container
+- Clone this repo to your server: `git clone https://github.com/hortio/docker-restic.git restic`
+- And change working directory: `cd restic`
+- Go through `docker-compose.yml` and edit/uncomment desired lines
+- Run `docker-compose up -d`
+- That's it!
+
+## Test the container
 
 Clone this repository
 
@@ -62,50 +63,28 @@ Shows `/var/log/cron.log`
 
 Additionally you can see the the full log, including restic output, of the last execution in `/var/log/backup-last.log`. When the backup fails the log is copied to `/var/log/restic-error-last.log`.
 
-# Customize the Container
+## Customize the Container
 
 The container is setup by setting [environment variables](https://docs.docker.com/engine/reference/run/#/env-environment-variables) and [volumes](https://docs.docker.com/engine/reference/run/#volume-shared-filesystems).
 
-## Environment variables
+### Environment variables
 
 * `RESTIC_REPOSITORY` - the location of the restic repository. Default `/mnt/restic`
 * `RESTIC_PASSWORD` - the password for the restic repository. Will also be used for restic init during first start when the repository is not initialized.
 * `RESTIC_TAG` - Optional. To tag the images created by the container.
-* `NFS_TARGET` - Optional. If set the given NFS is mounted, i.e. `mount -o nolock -v ${NFS_TARGET} /mnt/restic`. `RESTIC_REPOSITORY` must remain it's default value!
 * `BACKUP_CRON` - A cron expression to run the backup. Note: cron daemon uses UTC time zone. Default: `0 */6 * * *` aka every 6 hours.
 * `RESTIC_FORGET_ARGS` - Optional. Only if specified `restic forget` is run with the given arguments after each backup. Example value: `-e "RESTIC_FORGET_ARGS=--prune --keep-last 10 --keep-hourly 24 --keep-daily 7 --keep-weekly 52 --keep-monthly 120 --keep-yearly 100"`
 * `RESTIC_JOB_ARGS` - Optional. Allows to specify extra arguments to the back up job such as limiting bandwith with `--limit-upload` or excluding file masks with `--exclude`.
 
-## Volumes
+### Volumes
 
 * `/data` - This is the data that gets backed up. Just [mount](https://docs.docker.com/engine/reference/run/#volume-shared-filesystems) it to wherever you want.
 
-## Set the hostname
+### Set the hostname
 
 Since restic saves the hostname with each snapshot and the hostname of a docker container is it's id you might want to customize this by setting the hostname of the container to another value.
 
 Either by setting the [environment variable](https://docs.docker.com/engine/reference/run/#env-environment-variables) `HOSTNAME` or with `--hostname` in the [network settings](https://docs.docker.com/engine/reference/run/#network-settings)
 
-## Backup to SFTP
 
-Since restic needs a **password less login** to the SFTP server make sure you can do `sftp user@host` from inside the container. If you can do so from your host system, the easiest way is to just mount your `.ssh` folder conaining the authorized cert into the container by specifying `-v ~/.ssh:/root/.ssh` as argument for `docker run`.
-
-Now you can simply specify the restic repository to be an [SFTP repository](https://restic.readthedocs.io/en/stable/Manual/#create-an-sftp-repository).
-
-```
--e "RESTIC_REPOSITORY=sftp:user@host:/tmp/backup"
-```
-
-# Changelog
-
-Versioning follows [Semantic versioning](http://semver.org/)
-
-! Breaking changes
-
-**:latest**  
-* ! `--prune` must be passed to `RESTIC_FORGET_ARGS` to execute prune after forget.
-* Switch to base Docker container to `golang:1.7-alpine` to support latest restic build.
-
-
-**:v1.0**
-* First stable version
+Please don't hesitate to report any issue you find. **Thanks.**
