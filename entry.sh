@@ -1,23 +1,25 @@
 #!bin/sh
-set -e
 
 echo "Starting container ..."
+echo "Setup backup cron job with cron expression BACKUP_CRON: ${BACKUP_CRON}"
+echo "${BACKUP_CRON} /bin/backup 2>&1" > /var/spool/cron/crontabs/root
 
-RESTIC_CMD=restic
+restic snapshots &>/dev/null
+status=$?
+echo "Check Repo status $status"
 
-if [ -n "${ROOT_CERT}" ]; then
-	RESTIC_CMD="${RESTIC_CMD} --cert ${ROOT_CERT}"
+if [ $status != 0 ]; then
+    echo "Restic repository '${RESTIC_REPOSITORY}' does not exists. Running restic init."
+    restic init
+
+    init_status=$?
+    echo "Repo init status $init_status"
+
+    if [ $init_status != 0 ]; then
+        echo "Failed to init the repository: '${RESTIC_REPOSITORY}'"
+        exit 1
+    fi
 fi
 
-echo "Setup backup cron job with cron expression BACKUP_CRON: ${BACKUP_CRON}"
-echo "${BACKUP_CRON} /bin/backup >> /var/log/cron.log 2>&1" > /var/spool/cron/crontabs/root
-
-# Make sure the file exists before we start tail
-touch /var/log/cron.log
-
-# start the cron deamon
-crond
-
-echo "Container started."
-
-tail -fn0 /var/log/cron.log
+# start cron in the foreground
+crond -f
