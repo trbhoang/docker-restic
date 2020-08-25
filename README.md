@@ -6,7 +6,7 @@ A simple docker container to automate [restic backups](https://restic.net/)
 
 - Clone this repo to your server: `git clone https://github.com/trbhoang/restic-docker.git restic`
 - And change working directory: `cd restic`
-- Go through `docker-compose.yml` and edit/uncomment desired lines
+- Rename .env.example to .env and edit your env config
 - Run `docker-compose up -d`
 - That's it!
 
